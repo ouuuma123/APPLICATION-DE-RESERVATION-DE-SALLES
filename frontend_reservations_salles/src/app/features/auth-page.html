@@ -1,0 +1,81 @@
+<main class="auth-page">
+  <section class="auth-story">
+    <a class="auth-brand" routerLink="/dashboard"><span class="brand-mark"><ng-icon name="lucideLayers" size="21" /></span><span>roomly<span>.</span></span></a>
+    <div class="story-content">
+      <div class="story-eyebrow"><span class="eyebrow-dot"></span> YOUR WORKSPACE, IN SYNC</div>
+      <h1>Make room<br />for <em>great work.</em></h1>
+      <p>Find the right space, bring your people together, and make every meeting a little more meaningful.</p>
+      <div class="story-photo" role="img" aria-label="A warm, sunlit modern meeting room">
+        <div class="photo-note"><span class="photo-note-icon"><ng-icon name="lucideCalendarCheck" size="16" /></span><span><strong>Your next great idea</strong><small>is already on the calendar.</small></span><span class="photo-note-check"><ng-icon name="lucideCheck" size="15" /></span></div>
+      </div>
+    </div>
+    <span class="story-footer">Thoughtfully designed for the way teams work.</span>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-mobile-brand"><a class="auth-brand" routerLink="/dashboard"><span class="brand-mark"><ng-icon name="lucideLayers" size="21" /></span><span>roomly<span>.</span></span></a></div>
+    <div class="auth-form-wrap">
+      <span class="form-kicker">{{ isRegister ? 'GET STARTED' : 'WELCOME BACK' }}</span>
+      <h2>{{ isRegister ? 'Create your account' : 'Good to see you again.' }}</h2>
+      <p class="form-intro">{{ isRegister ? 'A better meeting starts with a better space.' : 'Your next great meeting is just around the corner.' }}</p>
+
+      <form class="auth-form" (ngSubmit)="submit()" novalidate>
+        @if (isRegister) {
+          <mat-form-field appearance="outline">
+            <mat-label>Full name</mat-label>
+            <input matInput autocomplete="name" [formControl]="registerForm.controls.name" placeholder="e.g. Sophie Martin" />
+            @if (registerForm.controls.name.touched && registerForm.controls.name.invalid) { <mat-error>Please enter your name.</mat-error> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Work email</mat-label>
+            <input matInput type="email" autocomplete="email" [formControl]="registerForm.controls.email" placeholder="you@company.com" />
+            @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) { <mat-error>Enter a valid work email.</mat-error> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Department</mat-label>
+            <input matInput autocomplete="organization-title" [formControl]="registerForm.controls.department" placeholder="e.g. Product Design" />
+            @if (registerForm.controls.department.touched && registerForm.controls.department.invalid) { <mat-error>Please enter your department.</mat-error> }
+          </mat-form-field>
+        } @else {
+          <mat-form-field appearance="outline">
+            <mat-label>Work email</mat-label>
+            <input matInput type="email" autocomplete="email" [formControl]="loginForm.controls.email" placeholder="you@company.com" />
+            @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) { <mat-error>Enter a valid email address.</mat-error> }
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="passwordVisible() ? 'text' : 'password'" [autocomplete]="isRegister ? 'new-password' : 'current-password'" [formControl]="isRegister ? registerForm.controls.password : loginForm.controls.password" placeholder="At least 8 characters" />
+          <button mat-icon-button matSuffix type="button" [attr.aria-label]="passwordVisible() ? 'Hide password' : 'Show password'" (click)="passwordVisible.update((visible) => !visible)">
+            <ng-icon [name]="passwordVisible() ? 'lucideEyeOff' : 'lucideEye'" size="17" />
+          </button>
+          @if (isRegister && registerForm.controls.password.touched && registerForm.controls.password.invalid) { <mat-error>Use at least 8 characters.</mat-error> }
+          @if (!isRegister && loginForm.controls.password.touched && loginForm.controls.password.invalid) { <mat-error>Enter your password.</mat-error> }
+        </mat-form-field>
+
+        @if (isRegister) {
+          <mat-form-field appearance="outline">
+            <mat-label>Confirm password</mat-label>
+            <input matInput type="password" autocomplete="new-password" [formControl]="registerForm.controls.confirmPassword" placeholder="Re-enter your password" />
+          </mat-form-field>
+        } @else {
+          <div class="form-helpers"><label><input type="checkbox" /> <span>Remember me</span></label><a href="mailto:support@roomly.app?subject=Password%20reset">Forgot password?</a></div>
+        }
+
+        @if (errorMessage()) { <div class="form-error" role="alert"><ng-icon name="lucideCircleHelp" size="16" />{{ errorMessage() }}</div> }
+        <button class="submit-button" mat-flat-button color="primary" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Please wait…' : isRegister ? 'Create account' : 'Sign in to Roomly' }}
+          @if (!submitting()) { <ng-icon name="lucideArrowRight" size="16" /> }
+        </button>
+      </form>
+
+      @if (!isRegister) {
+        <div class="demo-hint"><span class="demo-sparkle"><ng-icon name="lucideSparkles" size="14" /></span><span><strong>Just exploring?</strong> Use the pre-filled demo account, or enter <code>admin&#64;roomly.app</code> to preview admin tools.</span></div>
+      }
+
+      <p class="auth-switch">{{ isRegister ? 'Already have a workspace?' : 'New to Roomly?' }} <a [routerLink]="isRegister ? '/login' : '/register'">{{ isRegister ? 'Sign in' : 'Create an account' }}</a></p>
+    </div>
+    <div class="auth-legal"><span>© 2025 Roomly, Inc.</span><span><a href="mailto:privacy@roomly.app">Privacy</a><a href="mailto:terms@roomly.app">Terms</a><a href="mailto:support@roomly.app">Help</a></span></div>
+  </section>
+</main>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${booking.id} ? 'Edit Booking' : 'Add New Booking'">Booking Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
+                        <span class="text-xl font-bold text-gray-800">RoomBooking</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-home mr-1"></i> Home
+                    </a>
+                    <a href="/rooms" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-door-open mr-1"></i> Rooms
+                    </a>
+                    <a href="/users" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-users mr-1"></i> Users
+                    </a>
+                    <a href="/bookings" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-calendar-alt mr-1"></i> Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span class="text-green-700" th:text="${successMessage}">Success message</span>
+        </div>
+
+        <div th:if="${errorMessage}" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+            <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+            <span class="text-red-700" th:text="${errorMessage}">Error message</span>
+        </div>
+
+        <div class="max-w-2xl mx-auto">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900" th:text="${booking.id} ? 'Edit Booking' : 'Add New Booking'">
+                    <i class="fas fa-calendar-plus text-purple-600 mr-2"></i>
+                    <span th:text="${booking.id} ? 'Edit Booking' : 'Add New Booking'">Booking Form</span>
+                </h1>
+                <p class="text-gray-600 mt-1" th:text="${booking.id} ? 'Update booking information' : 'Create a new room reservation'">Form</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-8">
+                <form th:action="${booking.id} ? @{/bookings/{id}(id=${booking.id})} : @{/bookings}" method="post" th:object="${booking}" class="space-y-6">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-heading mr-1"></i> Meeting Title
+                        </label>
+                        <input type="text" id="title" th:field="*{title}" required 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                               placeholder="Team Standup, Client Meeting, etc." />
+                    </div>
+
+                    <div>
+                        <label for="room" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-door-open mr-1"></i> Select Room
+                        </label>
+                        <select id="room" name="roomId" required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors">
+                            <option value="">Select a room</option>
+                            <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}" 
+                                    th:selected="${selectedRoomId != null && selectedRoomId == room.id}"></option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="user" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-1"></i> Select User
+                        </label>
+                        <select id="user" name="userId" required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors">
+                            <option value="">Select a user</option>
+                            <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.name}"
+                                    th:selected="${selectedUserId != null && selectedUserId == user.id}"></option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="startTime" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-clock mr-1"></i> Start Time
+                            </label>
+                            <input type="datetime-local" id="startTime" th:field="*{startTime}" required 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" />
+                        </div>
+
+                        <div>
+                            <label for="endTime" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-clock mr-1"></i> End Time
+                            </label>
+                            <input type="datetime-local" id="endTime" th:field="*{endTime}" required 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="attendeesCount" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-users mr-1"></i> Number of Attendees
+                        </label>
+                        <input type="number" id="attendeesCount" th:field="*{attendeesCount}" min="1"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                               placeholder="10" />
+                    </div>
+
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" id="submit-btn" class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center">
+                            <i class="fas fa-save mr-2"></i>
+                            Save Booking
+                        </button>
+                        <a href="/bookings" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>&copy; 2024 Room Reservation System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Room Reservation System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <i class="fas fa-calendar-check text-white text-2xl"></i>
+                        <span class="text-xl font-bold text-white">Admin Dashboard</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/rooms" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-door-open mr-1"></i> Rooms
+                    </a>
+                    <a href="/users" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-users mr-1"></i> Users
+                    </a>
+                    <a href="/bookings" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-calendar-alt mr-1"></i> Bookings
+                    </a>
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-user-shield text-purple-600 mr-3"></i>
+                Welcome, Administrator
+            </h1>
+            <p class="text-gray-600 text-lg">Manage rooms, users, and bookings from this central dashboard</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Rooms</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">
+                            <i class="fas fa-door-open text-blue-500 mr-2"></i>
+                            <span th:text="${roomsCount} ?: '4'">4</span>
+                        </p>
+                    </div>
+                    <a href="/rooms" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                        Manage <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Users</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">
+                            <i class="fas fa-users text-green-500 mr-2"></i>
+                            <span th:text="${usersCount} ?: '6'">6</span>
+                        </p>
+                    </div>
+                    <a href="/users" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                        Manage <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total Bookings</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">
+                            <i class="fas fa-calendar-alt text-purple-500 mr-2"></i>
+                            <span th:text="${bookingsCount} ?: '5'">5</span>
+                        </p>
+                    </div>
+                    <a href="/bookings" class="text-purple-600 hover:text-purple-700 text-sm font-medium">
+                        Manage <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                Quick Actions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a href="/rooms/new" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                    <i class="fas fa-plus-circle text-blue-600 text-2xl mr-4"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Add New Room</p>
+                        <p class="text-sm text-gray-600">Create a new meeting room</p>
+                    </div>
+                </a>
+                <a href="/users/new" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                    <i class="fas fa-user-plus text-green-600 text-2xl mr-4"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Add New User</p>
+                        <p class="text-sm text-gray-600">Register a new user</p>
+                    </div>
+                </a>
+                <a href="/bookings/new" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                    <i class="fas fa-calendar-plus text-purple-600 text-2xl mr-4"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Create Booking</p>
+                        <p class="text-sm text-gray-600">Schedule a reservation</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Privileges Info -->
+        <div class="bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl shadow-md p-6 text-white">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-crown mr-2"></i>
+                Administrator Privileges
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">Full Room Management</p>
+                        <p class="text-sm text-purple-100">Create, edit, and delete meeting rooms</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">User Management</p>
+                        <p class="text-sm text-purple-100">Manage all user accounts and roles</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">Booking Oversight</p>
+                        <p class="text-sm text-purple-100">View and manage all reservations</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">System Configuration</p>
+                        <p class="text-sm text-purple-100">Access to all system features</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>&copy; 2024 Room Reservation System. Admin Dashboard.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

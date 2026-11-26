@@ -1,0 +1,111 @@
+<div class="shell">
+  @if (mobileNavOpen()) {
+    <button class="nav-scrim" type="button" aria-label="Close navigation" (click)="mobileNavOpen.set(false)"></button>
+  }
+
+  <aside class="sidebar" [class.sidebar-open]="mobileNavOpen()" aria-label="Main navigation">
+    <a class="brand" routerLink="/dashboard" aria-label="Roomly home">
+      <span class="brand-mark"><ng-icon name="lucideLayers" size="21" /></span>
+      <span class="brand-word">roomly<span>.</span></span>
+    </a>
+
+    <div class="workspace-switcher">
+      <div class="workspace-avatar"><ng-icon name="lucideBuilding2" size="16" /></div>
+      <div class="workspace-copy"><strong>Northstar Studio</strong><span>Workspace</span></div>
+      <ng-icon class="workspace-chevron" name="lucideChevronDown" size="15" />
+    </div>
+
+    <div class="nav-caption">WORKSPACE</div>
+    <nav class="nav-list" aria-label="Workspace">
+      @for (item of navItems(); track item.path) {
+        <a
+          class="nav-item"
+          [routerLink]="item.path"
+          routerLinkActive="nav-item-active"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+          [attr.aria-label]="item.label">
+          <ng-icon [name]="item.icon" size="17" />
+          <span>{{ item.label }}</span>
+          @if (item.path === '/notifications' && workspace.unreadCount() > 0) {
+            <span class="nav-count">{{ workspace.unreadCount() }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="help-card">
+        <div class="help-icon"><ng-icon name="lucideCircleHelp" size="17" /></div>
+        <strong>Need a hand?</strong>
+        <p>Our workplace team is always happy to help.</p>
+        <a href="mailto:workplace@northstar.studio">Contact support <ng-icon name="lucideArrowUpRight" size="13" /></a>
+      </div>
+      <a class="settings-link" routerLink="/settings" routerLinkActive="settings-active">
+        <ng-icon name="lucideSettings" size="17" /><span>Preferences</span>
+      </a>
+      <button class="profile-button" type="button" (click)="profileOpen.update((open) => !open)" [attr.aria-expanded]="profileOpen()">
+        <span class="avatar">{{ user()?.initials ?? 'RM' }}</span>
+        <span class="profile-copy"><strong>{{ user()?.name ?? 'Roomly member' }}</strong><small>{{ user()?.department ?? 'Workspace' }}</small></span>
+        <ng-icon name="lucideMoreHorizontal" size="18" />
+      </button>
+      @if (profileOpen()) {
+        <div class="profile-menu">
+          @if (auth.demoMode) {
+            <span class="menu-caption">VIEW AS</span>
+            <button type="button" (click)="useRole('EMPLOYEE')"><ng-icon name="lucideUsers" size="15" /> Employee workspace</button>
+            <button type="button" (click)="useRole('ADMIN')"><ng-icon name="lucideShieldCheck" size="15" /> Admin workspace</button>
+            <span class="menu-divider"></span>
+          }
+          <button type="button" class="logout-action" (click)="auth.logout()"><ng-icon name="lucideLogOut" size="15" /> Sign out</button>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <div class="main-shell">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu icon-button" type="button" aria-label="Open navigation" (click)="mobileNavOpen.set(true)">
+          <ng-icon name="lucideMenu" size="19" />
+        </button>
+        <div class="breadcrumb"><span>Workspace</span><ng-icon name="lucideChevronRight" size="13" /><strong>{{ pageTitle() }}</strong></div>
+      </div>
+      <div class="topbar-actions">
+        <form class="global-search" role="search" (submit)="$event.preventDefault(); search()">
+          <ng-icon name="lucideSearch" size="16" />
+          <input aria-label="Search rooms" placeholder="Search rooms, meetings..." [value]="searchText()" (input)="searchText.set($any($event.target).value)" />
+          <kbd>⌘ K</kbd>
+        </form>
+        <div class="notification-wrap">
+          <button class="icon-button notification-button" type="button" aria-label="Open notifications" [attr.aria-expanded]="notificationOpen()" (click)="notificationOpen.update((open) => !open)">
+            <ng-icon name="lucideBell" size="18" />
+            @if (workspace.unreadCount()) { <span class="notification-dot"></span> }
+          </button>
+          @if (notificationOpen()) {
+            <div class="notification-popover">
+              <div class="popover-heading"><div><strong>Notifications</strong><span>{{ workspace.unreadCount() }} unread</span></div><a routerLink="/notifications">See all</a></div>
+              @if (notificationError()) { <p class="popover-error" role="alert">{{ notificationError() }}</p> }
+              @for (notification of workspace.notifications().slice(0, 3); track notification.id) {
+                <button class="popover-notification" type="button" [class.notification-unread]="!notification.read" (click)="markNotificationAsRead(notification.id)">
+                  <span class="popover-dot"></span><span><strong>{{ notification.title }}</strong><small>{{ notification.message }}</small><time>{{ notification.time }}</time></span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <span class="topbar-divider"></span>
+        <button class="topbar-user" type="button" (click)="profileOpen.update((open) => !open)" aria-label="Open profile menu">
+          <span class="avatar avatar-small">{{ user()?.initials ?? 'RM' }}</span><ng-icon name="lucideChevronDown" size="14" />
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      @if (workspace.loadError()) {
+        <div class="workspace-api-error" role="alert"><ng-icon name="lucideCircleHelp" size="17" /><span><strong>We couldn’t load your workspace.</strong> {{ workspace.loadError() }}</span><button type="button" (click)="workspace.reload()">Try again</button></div>
+      }
+      <router-outlet />
+    </main>
+    <footer class="footer"><span>© 2025 Roomly · Northstar Studio</span><span>Made for better meetings <span class="footer-heart">✦</span></span></footer>
+  </div>
+</div>

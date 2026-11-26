@@ -1,0 +1,61 @@
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+:root {
+  color-scheme: light;
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$cyan-palette,
+      theme-type: light,
+    ),
+    typography: Inter,
+    density: 0,
+  ));
+  --navy: #172b4d;
+  --navy-2: #203d68;
+  --teal: #16a6a0;
+  --teal-deep: #128b85;
+  --mat-sys-primary: #16a6a0;
+  --mat-sys-on-primary: #fff;
+  --mdc-filled-button-container-color: #16a6a0;
+  --mdc-filled-button-label-text-color: #fff;
+  --bg: #f5f7fa;
+  --surface: #fff;
+  --text: #253247;
+  --muted: #8290a4;
+  --line: #e9edf2;
+  --green: #16a34a;
+  --amber: #e69b35;
+  --red: #dc4444;
+  --shadow: 0 12px 35px rgb(23 43 77 / 6%);
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+ng-icon { display: inline-flex; flex: 0 0 auto; align-items: center; vertical-align: middle; }
+.mat-mdc-unelevated-button.mat-primary {
+  --mdc-filled-button-container-color: var(--teal);
+  --mdc-filled-button-label-text-color: #fff;
+}
+.mat-mdc-unelevated-button.primary-button,
+.mat-mdc-unelevated-button.submit-button {
+  color: #fff !important;
+  background-color: var(--teal) !important;
+}
+.mat-mdc-outlined-button { --mdc-outlined-button-outline-color: var(--line); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

@@ -1,0 +1,267 @@
+@if (loading()) {
+  <div class="page-skeleton" aria-label="Loading workspace">
+    <span class="skeleton skeleton-kicker"></span><span class="skeleton skeleton-title"></span>
+    <span class="skeleton skeleton-copy"></span><span class="skeleton skeleton-banner"></span>
+    <div class="skeleton-metrics"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+    <div class="skeleton-panels"><span class="skeleton"></span><span class="skeleton"></span></div>
+  </div>
+} @else {
+  @switch (page) {
+    @case ('dashboard') {
+      <section class="dashboard-page">
+        <div class="welcome-row">
+          <div><span class="eyebrow">{{ today | date:'EEEE, MMMM d' | uppercase }}</span><h1>Good morning, {{ firstName() }} <span class="wave">✦</span></h1><p>Here’s what’s happening across your workspace today.</p></div>
+          <a mat-flat-button color="primary" class="primary-button" routerLink="/reservations/new"><ng-icon name="lucidePlus" size="16" /> New reservation</a>
+        </div>
+
+        <div class="hero-banner">
+          <div class="hero-copy"><span class="hero-eyebrow"><ng-icon name="lucideSparkles" size="14" /> YOUR WORKSPACE, AT A GLANCE</span><h2>A little more room<br />for your best work.</h2><p>Find a space that fits your next big idea.</p><a routerLink="/rooms">Explore available rooms <ng-icon name="lucideArrowRight" size="15" /></a></div>
+          <div class="hero-art" role="img" aria-label="A bright, modern meeting room"><span class="hero-art-label"><span></span> Spaces that inspire</span></div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon stat-teal"><ng-icon name="lucideCalendarCheck" size="17" /></span><span class="stat-trend"><ng-icon name="lucideArrowUpRight" size="13" /> {{ upcomingThisWeek() }} this week</span></div><strong>{{ upcomingThisWeek() }}</strong><span>Upcoming meetings</span><small>Across your calendar</small></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon stat-blue"><ng-icon name="lucideDoorOpen" size="17" /></span><a class="stat-link" routerLink="/rooms">View rooms <ng-icon name="lucideArrowRight" size="12" /></a></div><strong>{{ availableRooms() }}<small class="stat-total"> / {{ workspace.rooms().length }}</small></strong><span>Rooms available</span><small>Ready when you are</small></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon stat-amber"><ng-icon name="lucideChartNoAxesCombined" size="17" /></span><span class="stat-trend trend-muted">This week</span></div><strong>{{ occupancy() }}<small class="stat-total">%</small></strong><span>Workspace occupancy</span><div class="tiny-progress"><span [style.width.%]="occupancy()"></span></div></article>
+          <article class="stat-card"><div class="stat-top"><span class="stat-icon stat-lilac"><ng-icon name="lucideBell" size="17" /></span><a class="stat-link" routerLink="/notifications">View all <ng-icon name="lucideArrowRight" size="12" /></a></div><strong>{{ unreadNotifications() }}</strong><span>Unread notifications</span><small>Nothing important missed</small></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel upcoming-panel">
+            <div class="panel-heading"><div><h3>Coming up</h3><p>Your next meetings at a glance.</p></div><a class="text-link" routerLink="/reservations">View all <ng-icon name="lucideArrowRight" size="14" /></a></div>
+            @if (upcomingReservations().length) {
+              <div class="upcoming-list">
+                @for (reservation of upcomingReservations().slice(0, 4); track reservation.id) {
+                  <button class="upcoming-item" type="button" (click)="selectedReservation.set(reservation)">
+                    <span class="meeting-date"><strong>{{ reservation.startTime | date:'d' }}</strong><small>{{ reservation.startTime | date:'MMM' | uppercase }}</small></span>
+                    <span class="meeting-detail"><strong>{{ reservation.title }}</strong><small><ng-icon name="lucideMapPin" size="12" /> {{ reservation.roomName }} <span>·</span> {{ reservation.attendeesCount }} people</small></span>
+                    <span class="meeting-time">{{ timeLabel(reservation.startTime) }}<ng-icon name="lucideChevronRight" size="14" /></span>
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="empty-state compact-empty"><span class="empty-icon"><ng-icon name="lucideCalendarDays" size="19" /></span><strong>A little breathing room.</strong><p>You don’t have any upcoming meetings yet.</p><a routerLink="/reservations/new">Book a room</a></div>
+            }
+            <a class="panel-bottom-link" routerLink="/calendar"><ng-icon name="lucideCalendarDays" size="14" /> Open your calendar <ng-icon name="lucideArrowRight" size="13" /></a>
+          </section>
+
+          <section class="panel chart-panel">
+            <div class="panel-heading"><div><h3>Room activity</h3><p>Meetings across your workspace.</p></div><button class="period-button" type="button"><ng-icon name="lucideCalendarDays" size="14" /> This week <ng-icon name="lucideChevronDown" size="13" /></button></div>
+            <div class="chart-summary"><strong>{{ workspace.reservations().filter(isActiveReservation).length }}</strong><span>meetings scheduled</span><span class="chart-legend"><i></i> Bookings</span></div>
+            <div class="activity-chart" aria-label="Weekly room bookings chart">
+              <div class="chart-y-labels"><span>8</span><span>6</span><span>4</span><span>2</span><span>0</span></div>
+              <div class="chart-bars">
+                @for (day of thisWeekDates(); track day.toISOString()) {
+                  <div class="chart-day"><div class="chart-track"><span class="chart-bar" [class.chart-bar-today]="isToday(day)" [style.height.%]="chartHeight(day)"></span><span class="chart-gridline line-one"></span><span class="chart-gridline line-two"></span><span class="chart-gridline line-three"></span></div><span [class.chart-label-today]="isToday(day)">{{ day | date:'EEE' }}</span></div>
+                }
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="dashboard-grid lower-grid">
+          <section class="panel availability-panel">
+            <div class="panel-heading"><div><h3>Room availability</h3><p>Spaces ready for your next meeting.</p></div><a class="text-link" routerLink="/rooms">Explore rooms <ng-icon name="lucideArrowRight" size="14" /></a></div>
+            <div class="availability-list">
+              @for (room of workspace.rooms().slice(0, 4); track room.id) {
+                <a class="availability-row" [routerLink]="['/rooms', room.id]"><span class="availability-room-icon"><ng-icon name="lucideDoorOpen" size="15" /></span><span class="availability-room"><strong>{{ room.name }}</strong><small>{{ room.location }} · {{ room.capacity }} seats</small></span><span class="availability-pill" [class.pill-busy]="!room.active"><i></i>{{ room.active ? 'Available' : 'Unavailable' }}</span></a>
+              }
+            </div>
+          </section>
+          <section class="panel activity-panel">
+            <div class="panel-heading"><div><h3>Recent activity</h3><p>A little update from your workspace.</p></div><ng-icon class="heading-more" name="lucideMoreHorizontal" size="18" /></div>
+            <div class="activity-list">
+              @for (notification of workspace.notifications().slice(0, 3); track notification.id) {
+                <div class="activity-item"><span class="activity-dot" [class.activity-dot-amber]="notification.type === 'reminder'"><ng-icon [name]="notificationIcon(notification)" size="14" /></span><span><strong>{{ notification.title }}</strong><small>{{ notification.message }}</small><time>{{ notification.time }}</time></span></div>
+              }
+            </div>
+          </section>
+        </div>
+      </section>
+    }
+
+    @case ('rooms') {
+      <section class="rooms-page">
+        <div class="page-heading-row"><div><span class="eyebrow">FIND YOUR SPACE</span><h1>Rooms that work for you.</h1><p>Thoughtful spaces for focused work, big ideas and everything in between.</p></div><span class="room-count"><strong>{{ visibleRooms().length }}</strong> spaces</span></div>
+        <div class="room-search-bar">
+          <label class="search-field"><ng-icon name="lucideSearch" size="16" /><input aria-label="Search spaces" placeholder="Search by room, location or equipment" [value]="roomSearch()" (input)="roomSearch.set($any($event.target).value)" /></label>
+          <label class="filter-field"><ng-icon name="lucideUsers" size="15" /><select aria-label="Minimum room capacity" (change)="minCapacity.set(+$any($event.target).value)"><option value="0">Any size</option><option value="4">4+ people</option><option value="8">8+ people</option><option value="12">12+ people</option></select><ng-icon name="lucideChevronDown" size="13" /></label>
+          <label class="filter-field"><ng-icon name="lucideSlidersHorizontal" size="15" /><select aria-label="Filter by equipment" (change)="equipmentFilter.set($any($event.target).value)"><option>All equipment</option><option>Video conferencing</option><option>Whiteboard</option><option>4K display</option><option>Monitor</option></select><ng-icon name="lucideChevronDown" size="13" /></label>
+          <button class="filter-icon-button" type="button" aria-label="Reset filters" (click)="roomSearch.set(''); minCapacity.set(0); equipmentFilter.set('All equipment')"><ng-icon name="lucideFilter" size="16" /></button>
+        </div>
+        @if (visibleRooms().length) {
+          <div class="room-grid">
+            @for (room of visibleRooms(); track room.id) {
+              <article class="room-card">
+                <a class="room-photo" [routerLink]="['/rooms', room.id]" [style.background-image]="'url(' + room.image + ')'">
+                  <span class="availability-pill"><i></i> Available</span><button class="favorite-button" type="button" aria-label="Save room" (click)="$event.preventDefault()"><ng-icon name="lucideBookmark" size="16" /></button>
+                </a>
+                <div class="room-card-body">
+                  <div class="room-name-row"><a [routerLink]="['/rooms', room.id]"><h3>{{ room.name }}</h3></a><span class="room-capacity"><ng-icon name="lucideUsers" size="14" /> {{ room.capacity }}</span></div>
+                  <p class="room-location"><ng-icon name="lucideMapPin" size="13" /> {{ room.location }} <span>·</span> {{ room.floor }}</p>
+                  <div class="equipment-list">@for (item of room.equipment.slice(0, 2); track item) { <span class="equipment-chip">{{ item }}</span> }@if (room.equipment.length > 2) { <span class="equipment-extra">+{{ room.equipment.length - 2 }}</span> }</div>
+                  <div class="room-card-footer"><span><span class="availability-dot"></span> Available now</span><a [routerLink]="['/rooms', room.id]">View room <ng-icon name="lucideArrowRight" size="14" /></a></div>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="empty-state large-empty"><span class="empty-icon"><ng-icon name="lucideSearch" size="21" /></span><strong>No rooms quite match.</strong><p>Try widening your search or adjusting the filters.</p><button class="text-link-button" type="button" (click)="roomSearch.set(''); minCapacity.set(0); equipmentFilter.set('All equipment')">Clear all filters</button></div>
+        }
+      </section>
+    }
+
+    @case ('room-details') {
+      @if (selectedRoom(); as room) {
+        <section class="room-details-page">
+          <a class="back-link" routerLink="/rooms"><ng-icon name="lucideArrowLeft" size="15" /> Back to all rooms</a>
+          <div class="room-detail-layout">
+            <div class="room-detail-main">
+              <div class="detail-gallery"><div class="detail-gallery-main" [style.background-image]="'url(' + room.image + ')'"><span class="availability-pill"><i></i> Available now</span></div><div class="detail-gallery-side"><div [style.background-image]="'url(' + room.image + ')'"></div><div class="gallery-info"><ng-icon name="lucideSparkles" size="18" /><strong>A space to do your best work.</strong><span>Thoughtfully designed, ready for you.</span></div></div></div>
+              <div class="room-detail-title"><div><span class="eyebrow">{{ room.location }} · {{ room.floor }}</span><h1>{{ room.name }}</h1><p>A welcoming, thoughtfully equipped space with everything your team needs to connect, collaborate and move good ideas forward.</p></div><button class="favorite-outline" type="button" aria-label="Save this room"><ng-icon name="lucideBookmark" size="17" /></button></div>
+              <div class="room-facts"><div><span class="fact-icon"><ng-icon name="lucideUsers" size="17" /></span><span><strong>{{ room.capacity }} people</strong><small>Comfortable capacity</small></span></div><div><span class="fact-icon"><ng-icon name="lucideMapPin" size="17" /></span><span><strong>{{ room.location }}</strong><small>{{ room.floor }}</small></span></div><div><span class="fact-icon"><ng-icon name="lucideClock3" size="17" /></span><span><strong>Mon – Fri</strong><small>8:00 AM – 6:00 PM</small></span></div></div>
+              <div class="detail-section"><h3>Everything you need</h3><p>Equipment and amenities included in this space.</p><div class="room-amenities">@for (item of room.equipment; track item) { <span class="amenity-chip"><ng-icon [name]="item.includes('Video') ? 'lucideVideo' : item.includes('Whiteboard') ? 'lucideSquarePen' : item.includes('display') ? 'lucideMonitor' : 'lucideCheck'" size="15" />{{ item }}</span> }<span class="amenity-chip"><ng-icon name="lucideWifi" size="15" />High-speed Wi-Fi</span><span class="amenity-chip"><ng-icon name="lucideCoffee" size="15" />Coffee nearby</span></div></div>
+              <div class="detail-section"><h3>About this space</h3><p>Settle in and get straight to the good stuff. Natural light, comfortable seating and intuitive room controls make this one of the most loved spaces in the workspace.</p></div>
+            </div>
+            <aside class="booking-card"><div class="booking-card-heading"><span class="eyebrow">MAKE IT YOURS</span><h3>Find a time</h3><p>Choose a day to see what’s open.</p></div><label class="date-picker-label">DATE<input type="date" [value]="roomDetailDate()" (change)="roomDetailDate.set($any($event.target).value)" /></label><div class="availability-date-strip">@for (date of roomDateChoices; track date.toISOString()) { <button type="button" [class.date-selected]="roomDetailDate() === dateKey(date)" (click)="roomDetailDate.set(dateKey(date))"><small>{{ date | date:'EEE' }}</small><strong>{{ date | date:'d' }}</strong></button> }</div><div class="slot-heading"><span>{{ dateAvailability() }} times</span><span>{{ roomDetailDate() | date:'EEE, MMM d' }}</span></div><div class="time-slots">@for (slot of ['9:00 AM', '10:30 AM', '12:00 PM', '1:30 PM', '3:00 PM', '4:30 PM']; track slot) { <button class="time-slot" [class.time-slot-unavailable]="!isSlotAvailable(room, roomDetailDate(), slot)" [disabled]="!isSlotAvailable(room, roomDetailDate(), slot)" type="button" (click)="bookSelectedSlot(room, roomDetailDate(), slot)">{{ slot }}</button> }</div><a mat-flat-button color="primary" class="primary-button full-book-button" [routerLink]="['/reservations/new']" [queryParams]="{ roomId: room.id, date: roomDetailDate() }"><ng-icon name="lucideCalendarCheck" size="16" /> Book this room</a><p class="booking-note"><ng-icon name="lucideCircleCheck" size="14" /> Free cancellation up to 30 minutes before.</p></aside>
+          </div>
+        </section>
+      }
+    }
+
+    @case ('new-reservation') {
+      <section class="reservation-page">
+        <div class="page-heading-row reservation-heading"><div><span class="eyebrow">LET’S GET TOGETHER</span><h1>Make a reservation.</h1><p>Bring your people together in a space that feels just right.</p></div><span class="reservation-step"><span>01</span> DETAILS <i></i><span>02</span> CONFIRM</span></div>
+        @if (formSuccess()) { <div class="success-banner" role="status"><ng-icon name="lucideCircleCheck" size="19" /><span><strong>All set!</strong> {{ formSuccess() }}</span><a routerLink="/reservations">View my reservations <ng-icon name="lucideArrowRight" size="14" /></a></div> }
+        <div class="reservation-layout">
+          <form class="reservation-form panel" [formGroup]="reservationForm" (ngSubmit)="submitReservation()" novalidate>
+            <div class="form-section-heading"><span class="section-number">01</span><div><h3>The essentials</h3><p>Start with the what, where and when.</p></div></div>
+            <label class="field-label">Meeting title <span>*</span><input type="text" formControlName="title" placeholder="e.g. Product roadmap review" maxlength="100" /><small class="field-hint">Give your meeting a name everyone will recognize.</small></label>
+            @if (reservationForm.controls.title.touched && reservationForm.controls.title.invalid) { <span class="validation-message">Please add a meeting title.</span> }
+            <label class="field-label">Choose a room <span>*</span><select formControlName="roomId"><option value="" disabled>Select the right space</option>@for (room of workspace.rooms(); track room.id) { @if (room.active) { <option [value]="room.id">{{ room.name }} · {{ room.capacity }} seats · {{ room.location }}</option> } }</select></label>
+            <div class="selected-room-note"><ng-icon name="lucideSparkles" size="15" /><span>Need a hand deciding? <a routerLink="/rooms">Explore all spaces</a> to find the perfect fit.</span></div>
+
+            <div class="form-section-heading form-section-spaced"><span class="section-number">02</span><div><h3>Pick your time</h3><p>Choose when you’d like to meet.</p></div></div>
+            <div class="form-date-row"><label class="field-label">Date <span>*</span><input type="date" formControlName="date" /></label><label class="field-label">People <span>*</span><span class="number-field"><ng-icon name="lucideUsers" size="15" /><input type="number" formControlName="attendeesCount" min="1" /></span></label></div>
+            <div class="form-date-row"><label class="field-label">Starts at <span>*</span><input type="time" formControlName="start" /></label><label class="field-label">Ends at <span>*</span><input type="time" formControlName="end" /></label></div>
+            <label class="field-label">Anything else? <small class="optional">(optional)</small><textarea rows="3" formControlName="description" placeholder="Add a note for your attendees, or share a little context…"></textarea></label>
+            @if (formError()) { <div class="form-error" role="alert"><ng-icon name="lucideCircleHelp" size="16" />{{ formError() }}</div> }
+            <div class="form-actions"><a class="cancel-link" routerLink="/rooms">Maybe later</a><button mat-flat-button color="primary" class="primary-button" type="submit"><ng-icon name="lucideCalendarCheck" size="16" /> Confirm reservation</button></div>
+          </form>
+
+          <aside class="reservation-aside">
+            <div class="panel summary-card"><span class="eyebrow">YOUR RESERVATION</span><h3>Looking good.</h3><p>Here’s a little snapshot of what you’re planning.</p>
+              @if (selectedRoom(); as room) { <div class="summary-room-photo" [style.background-image]="'url(' + room.image + ')'"><span>{{ room.name }}</span></div><div class="summary-room-info"><span><ng-icon name="lucideMapPin" size="14" />{{ room.location }} · {{ room.floor }}</span><span><ng-icon name="lucideUsers" size="14" />Up to {{ room.capacity }} people</span></div> }
+              <div class="summary-divider"></div><div class="summary-row"><span><ng-icon name="lucideCalendarDays" size="15" /> Date & time</span><strong>{{ reservationForm.controls.date.value | date:'EEE, MMM d' }}<br />{{ reservationForm.controls.start.value }} – {{ reservationForm.controls.end.value }}</strong></div><div class="summary-row"><span><ng-icon name="lucideUsers" size="15" /> Attendees</span><strong>{{ reservationForm.controls.attendeesCount.value }} people</strong></div><div class="summary-row"><span><ng-icon name="lucideCircleCheck" size="15" /> Cancellation</span><strong class="summary-good">Free up to 30 min before</strong></div>
+            </div>
+            <div class="help-note"><span class="help-note-icon"><ng-icon name="lucideCircleHelp" size="16" /></span><span><strong>A change of plans?</strong><small>You can edit or cancel your reservation anytime from My Reservations.</small></span></div>
+          </aside>
+        </div>
+      </section>
+    }
+
+    @case ('calendar') {
+      <section class="calendar-page">
+        <div class="page-heading-row"><div><span class="eyebrow">A LITTLE LESS BACK-AND-FORTH</span><h1>Bring the week into focus.</h1><p>See what’s happening in your workspace and find the perfect time to meet.</p></div><a mat-flat-button color="primary" class="primary-button" routerLink="/reservations/new"><ng-icon name="lucidePlus" size="16" /> New reservation</a></div>
+        <section class="panel calendar-panel">
+          <div class="calendar-toolbar"><div class="calendar-month"><div class="month-nav"><button type="button" aria-label="Previous period" (click)="moveCalendar(-1)"><ng-icon name="lucideChevronLeft" size="17" /></button><button type="button" aria-label="Next period" (click)="moveCalendar(1)"><ng-icon name="lucideChevronRight" size="17" /></button></div><h3>{{ monthLabel() }}</h3><button class="today-button" type="button" (click)="calendarOffset.set(0)">Today</button></div><div class="calendar-controls"><label class="calendar-room-filter"><ng-icon name="lucideDoorOpen" size="14" /><select aria-label="Filter calendar by room" (change)="selectedRoomFilter.set($any($event.target).value)"><option>All rooms</option>@for (room of workspace.rooms(); track room.id) { <option>{{ room.name }}</option> }</select><ng-icon name="lucideChevronDown" size="13" /></label><div class="view-switcher">@for (view of ['Day', 'Week', 'Month']; track view) { <button type="button" [class.view-selected]="calendarView() === view" (click)="setCalendarView($any(view))">{{ view }}</button> }</div></div></div>
+          @if (calendarView() === 'Week') {
+            <div class="week-calendar"><div class="week-time-gutter"><span></span>@for (hour of ['9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM']; track hour) { <span>{{ hour }}</span> }</div><div class="week-day-columns">@for (day of calendarDates(); track day.toISOString()) { <div class="week-day-column"><div class="week-day-heading" [class.current-day-heading]="isToday(day)"><span>{{ day | date:'EEE' }}</span><strong>{{ day | date:'d' }}</strong></div><div class="week-day-events">@for (reservation of reservationsForDate(day); track reservation.id) { <button class="calendar-event" [class.event-pending]="reservation.status === 'PENDING'" type="button" (click)="selectedReservation.set(reservation)"><strong>{{ reservation.title }}</strong><small>{{ timeLabel(reservation.startTime) }} · {{ reservation.roomName }}</small></button> }@if (!reservationsForDate(day).length) { <span class="calendar-empty-mark"></span> }</div></div> }</div></div>
+          } @else if (calendarView() === 'Day') {
+            <div class="day-calendar"><div class="day-calendar-heading"><span>{{ calendarDates()[0] | date:'EEEE, MMMM d' }}</span><strong>{{ reservationsForDate(calendarDates()[0]).length }} meetings</strong></div>@for (hour of ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM']; track hour) { <div class="day-hour"><time>{{ hour }}</time><div class="day-hour-line">@for (reservation of reservationsForDate(calendarDates()[0]); track reservation.id) { @if (timeLabel(reservation.startTime) === hour) { <button class="day-event" type="button" (click)="selectedReservation.set(reservation)"><strong>{{ reservation.title }}</strong><span>{{ reservation.roomName }} · {{ reservation.attendeesCount }} attendees</span></button> } }</div></div> }</div>
+          } @else {
+            <div class="month-calendar"><div class="month-weekdays">@for (weekday of ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; track weekday) { <span>{{ weekday }}</span> }</div><div class="month-days">@for (day of calendarDates(); track day.toISOString()) { <button class="month-day" type="button" [class.month-day-today]="isToday(day)" [class.month-day-outside]="!monthMatches(day)" (click)="selectMonthDay(day)"><span>{{ day | date:'d' }}</span>@for (reservation of reservationsForDate(day).slice(0,2); track reservation.id) { <small [class.month-event-pending]="reservation.status === 'PENDING'">{{ reservation.title }}</small> }@if (reservationsForDate(day).length > 2) { <small class="month-more">+{{ reservationsForDate(day).length - 2 }} more</small> }</button> }</div></div>
+          }
+          <div class="calendar-legend"><span><i class="legend-teal"></i> Confirmed</span><span><i class="legend-amber"></i> Awaiting approval</span><span><i class="legend-gray"></i> Your reservations</span></div>
+        </section>
+      </section>
+    }
+
+    @case ('reservations') {
+      <section class="reservations-page">
+        <div class="page-heading-row"><div><span class="eyebrow">YOUR TIME, WELL SPENT</span><h1>My reservations.</h1><p>All your meetings, in one easy place.</p></div><a mat-flat-button color="primary" class="primary-button" routerLink="/reservations/new"><ng-icon name="lucidePlus" size="16" /> New reservation</a></div>
+        <section class="panel reservations-panel">
+          <div class="table-toolbar"><div class="filter-tabs">@for (filter of ['All', 'Confirmed', 'Pending', 'Cancelled']; track filter) { <button type="button" [class.tab-selected]="statusFilter() === filter" (click)="setReservationFilter($any(filter))">{{ filter }} <span>{{ filter === 'All' ? reservationsForUser().length : reservationsForUser().filter((item) => item.status === filter.toUpperCase()).length }}</span></button> }</div><label class="table-search"><ng-icon name="lucideSearch" size="15" /><input aria-label="Search reservations" placeholder="Search meetings..." [value]="reservationSearch()" (input)="setReservationSearch($any($event.target).value)" /></label></div>
+          @if (visibleReservations().length) {
+            <div class="responsive-table"><table><thead><tr><th>MEETING</th><th>ROOM</th><th>DATE & TIME</th><th>ATTENDEES</th><th>STATUS</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>
+              @for (reservation of pagedReservations(); track reservation.id) {
+                <tr><td><button class="table-meeting" type="button" (click)="selectedReservation.set(reservation)"><span class="table-meeting-icon"><ng-icon name="lucideCalendarCheck" size="15" /></span><span><strong>{{ reservation.title }}</strong><small>#{{ reservation.id }}</small></span></button></td><td><span class="table-room"><ng-icon name="lucideDoorOpen" size="14" />{{ reservation.roomName }}</span></td><td><span class="table-date">{{ reservation.startTime | date:'EEE, MMM d' }}</span><small class="table-time">{{ timeLabel(reservation.startTime) }} – {{ timeLabel(reservation.endTime) }}</small></td><td><span class="attendee-count"><ng-icon name="lucideUsers" size="14" />{{ reservation.attendeesCount }}</span></td><td><span class="status-badge" [class.status-confirmed]="reservation.status === 'CONFIRMED'" [class.status-pending]="reservation.status === 'PENDING'" [class.status-cancelled]="reservation.status === 'CANCELLED'"><i></i>{{ reservation.status === 'CONFIRMED' ? 'Confirmed' : reservation.status === 'PENDING' ? 'Pending' : 'Cancelled' }}</span></td><td><button class="row-more" type="button" aria-label="View reservation" (click)="selectedReservation.set(reservation)"><ng-icon name="lucideMoreHorizontal" size="18" /></button></td></tr>
+              }
+            </tbody></table></div>
+            <div class="table-footer"><span>Showing <strong>{{ reservationPageStart() }}–{{ reservationPageEnd() }}</strong> of <strong>{{ visibleReservations().length }}</strong> reservations</span><div><button type="button" [disabled]="reservationPage() === 1" aria-label="Previous page" (click)="moveReservationPage(-1)"><ng-icon name="lucideChevronLeft" size="15" /></button><button class="page-current" type="button" aria-current="page">{{ reservationPage() }}</button><button type="button" [disabled]="reservationPage() === reservationPageCount()" aria-label="Next page" (click)="moveReservationPage(1)"><ng-icon name="lucideChevronRight" size="15" /></button></div></div>
+          } @else {
+            <div class="empty-state large-empty"><span class="empty-icon"><ng-icon name="lucideCalendarDays" size="21" /></span><strong>No reservations found.</strong><p>Try another search or choose a different status.</p><a mat-flat-button color="primary" class="primary-button" routerLink="/reservations/new"><ng-icon name="lucidePlus" size="15" /> Book a room</a></div>
+          }
+        </section>
+      </section>
+    }
+
+    @case ('notifications') {
+      <section class="notifications-page">
+        <div class="page-heading-row"><div><span class="eyebrow">A LITTLE FRIENDLY HEADS-UP</span><h1>Good things to know.</h1><p>Your workspace, keeping you in the loop.</p></div>@if (unreadNotifications()) { <button class="secondary-button" type="button" (click)="markAllNotificationsRead()"><ng-icon name="lucideCheck" size="15" /> Mark all as read</button> }</div>
+        <section class="panel notifications-panel"><div class="notifications-panel-heading"><span>{{ workspace.notifications().length }} notifications</span><span><i></i> {{ unreadNotifications() }} unread</span></div>
+          @if (workspace.notifications().length) {
+            @for (group of ['New', 'Earlier']; track group) {
+              @if (workspace.notifications().some((notification) => (group === 'New' ? !notification.read : notification.read))) {
+                <div class="notification-group"><h3>{{ group }}</h3>
+                  @for (notification of workspace.notifications(); track notification.id) {
+                    @if ((group === 'New' && !notification.read) || (group === 'Earlier' && notification.read)) {
+                      <article class="notification-card" [class.notification-card-unread]="!notification.read"><span class="notification-icon" [class.notification-icon-amber]="notification.type === 'reminder'" [class.notification-icon-blue]="notification.type === 'update'"><ng-icon [name]="notificationIcon(notification)" size="17" /></span><div class="notification-content"><div class="notification-title"><strong>{{ notification.title }}</strong><span>{{ notification.time }}</span></div><p>{{ notification.message }}</p><div class="notification-actions">@if (notification.type === 'booking') { <a routerLink="/reservations">View reservation <ng-icon name="lucideArrowRight" size="13" /></a> }@if (!notification.read) { <button type="button" (click)="markNotificationAsRead(notification)"><ng-icon name="lucideCheck" size="14" /> Mark as read</button> }</div></div>@if (!notification.read) { <span class="unread-dot"></span> }</article>
+                    }
+                  }
+                </div>
+              }
+            }
+          } @else {
+            <div class="empty-state large-empty"><span class="empty-icon"><ng-icon name="lucideBell" size="21" /></span><strong>All caught up.</strong><p>We’ll let you know when something needs your attention.</p></div>
+          }
+        </section>
+      </section>
+    }
+
+    @case ('admin') {
+      <section class="admin-page">
+        <div class="admin-welcome"><div><span class="eyebrow">WORKPLACE OPERATIONS</span><h1>Your workspace, in good hands.</h1><p>A clear view of your spaces, your people and what’s happening today.</p></div><span class="admin-period"><ng-icon name="lucideCalendarDays" size="15" /> {{ today | date:'MMMM d, y' }}</span></div>
+        <div class="stats-grid admin-stats"><article class="stat-card"><div class="stat-top"><span class="stat-icon stat-teal"><ng-icon name="lucideDoorOpen" size="17" /></span><span class="stat-trend trend-muted">Across your workspace</span></div><strong>{{ availableRooms() }}</strong><span>Active meeting rooms</span><small>{{ workspace.rooms().length - availableRooms() }} marked inactive</small></article><article class="stat-card"><div class="stat-top"><span class="stat-icon stat-blue"><ng-icon name="lucideCalendarCheck" size="17" /></span><span class="stat-trend"><ng-icon name="lucideArrowUpRight" size="13" /> 12% this month</span></div><strong>{{ workspace.reservations().filter(isActiveReservation).length }}</strong><span>Bookings this week</span><small>Across all meeting spaces</small></article><article class="stat-card"><div class="stat-top"><span class="stat-icon stat-lilac"><ng-icon name="lucideUsers" size="17" /></span><span class="stat-trend trend-muted">Active team members</span></div><strong>{{ workspace.users().length }}</strong><span>Workspace members</span><small>Across {{ departmentCount() }} departments</small></article><article class="stat-card"><div class="stat-top"><span class="stat-icon stat-amber"><ng-icon name="lucideChartNoAxesCombined" size="17" /></span><span class="stat-trend trend-muted">Room bookings</span></div><strong>{{ occupancy() }}<small class="stat-total">%</small></strong><span>Occupancy rate</span><div class="tiny-progress"><span [style.width.%]="occupancy()"></span></div></article></div>
+        <div class="admin-content-grid"><section class="panel admin-chart-panel"><div class="panel-heading"><div><h3>Workspace activity</h3><p>Bookings across your rooms this week.</p></div><a class="text-link" routerLink="/admin/reservations">All bookings <ng-icon name="lucideArrowRight" size="14" /></a></div><div class="admin-bars">@for (day of thisWeekDates(); track day.toISOString()) { <div class="admin-bar-day"><span class="admin-bar-count">{{ bookingsThisDay(day) }}</span><span class="admin-bar-track"><i [style.height.%]="chartHeight(day)"></i></span><small>{{ day | date:'EEE' }}</small></div> }</div></section><section class="panel admin-quick-links"><div class="panel-heading"><div><h3>Quick actions</h3><p>Keep things running smoothly.</p></div></div><a routerLink="/admin/rooms"><span class="quick-link-icon"><ng-icon name="lucideBuilding2" size="16" /></span><span><strong>Manage rooms</strong><small>Update room details and availability</small></span><ng-icon class="quick-arrow" name="lucideArrowRight" size="15" /></a><a routerLink="/admin/users"><span class="quick-link-icon quick-link-blue"><ng-icon name="lucideUsers" size="16" /></span><span><strong>Manage your team</strong><small>Invite people and set up roles</small></span><ng-icon class="quick-arrow" name="lucideArrowRight" size="15" /></a><a routerLink="/admin/reservations"><span class="quick-link-icon quick-link-amber"><ng-icon name="lucideClipboardList" size="16" /></span><span><strong>View all reservations</strong><small>See what’s happening across every room</small></span><ng-icon class="quick-arrow" name="lucideArrowRight" size="15" /></a></section></div>
+      </section>
+    }
+
+    @case ('admin-rooms') {
+      <section class="admin-management-page">
+        <div class="page-heading-row"><div><span class="eyebrow">YOUR SPACES, YOUR WAY</span><h1>Rooms & spaces.</h1><p>Make sure your rooms are ready to do their best work.</p></div><button mat-flat-button color="primary" class="primary-button" type="button" (click)="showRoomForm.update((value) => !value)"><ng-icon name="lucidePlus" size="16" /> Add a room</button></div>
+        @if (showRoomForm()) { <form class="inline-create-form panel" [formGroup]="roomForm" (ngSubmit)="createRoom()"><h3>A new space</h3><label>Room name<input formControlName="name" placeholder="e.g. The Workshop" /></label><label>Capacity<input type="number" formControlName="capacity" min="1" /></label><label>Location<input formControlName="location" placeholder="e.g. West Wing" /></label><label>Equipment<input formControlName="equipment" placeholder="Video conferencing, Whiteboard" /></label><button mat-flat-button color="primary" class="primary-button" type="submit">Add room</button></form> }
+        <section class="panel admin-rooms-panel"><div class="admin-table-heading"><div><h3>Your rooms</h3><p>{{ workspace.rooms().length }} spaces in this workspace</p></div><span class="active-count"><i></i>{{ availableRooms() }} active</span></div><div class="responsive-table"><table><thead><tr><th>ROOM</th><th>LOCATION</th><th>CAPACITY</th><th>EQUIPMENT</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody>@for (room of workspace.rooms(); track room.id) { <tr><td><a class="admin-room-name" [routerLink]="['/rooms', room.id]"><span class="table-meeting-icon"><ng-icon name="lucideDoorOpen" size="15" /></span><strong>{{ room.name }}</strong></a></td><td>{{ room.location }} · {{ room.floor }}</td><td><span class="attendee-count"><ng-icon name="lucideUsers" size="14" />{{ room.capacity }}</span></td><td><span class="equipment-table">{{ room.equipment[0] }}</span>@if (room.equipment.length > 1) { <span class="equipment-table muted-equipment"> +{{ room.equipment.length - 1 }} more</span> }</td><td><span class="status-badge" [class.status-confirmed]="room.active" [class.status-cancelled]="!room.active"><i></i>{{ room.active ? 'Active' : 'Inactive' }}</span></td><td><button class="action-text" type="button" (click)="changeRoomStatus(room)">{{ room.active ? 'Deactivate' : 'Activate' }}</button></td></tr> }</tbody></table></div></section>
+      </section>
+    }
+
+    @case ('admin-users') {
+      <section class="admin-management-page">
+        <div class="page-heading-row"><div><span class="eyebrow">A BETTER WORKSPACE, TOGETHER</span><h1>Good people, great work.</h1><p>Meet your people and make sure everyone has the right access.</p></div><button mat-flat-button color="primary" class="primary-button" type="button" (click)="showUserForm.update((value) => !value)"><ng-icon name="lucidePlus" size="16" /> Add a member</button></div>
+        @if (showUserForm()) { <form class="inline-create-form panel" [formGroup]="userForm" (ngSubmit)="createUser()"><h3>Invite a teammate</h3><label>Full name<input formControlName="name" placeholder="e.g. Casey Rivera" /></label><label>Work email<input type="email" formControlName="email" placeholder="casey@company.com" /></label><label>Department<input formControlName="department" placeholder="e.g. Design" /></label><label>Temporary password<input type="password" formControlName="password" placeholder="At least 8 characters" /></label><button mat-flat-button color="primary" class="primary-button" type="submit">Add to workspace</button></form> }
+        <section class="panel admin-users-panel"><div class="admin-table-heading"><div><h3>Your team</h3><p>{{ workspace.users().length }} members across {{ departmentCount() }} departments</p></div><label class="table-search"><ng-icon name="lucideSearch" size="15" /><input aria-label="Search team members" placeholder="Search people..." [value]="reservationSearch()" (input)="reservationSearch.set($any($event.target).value)" /></label></div><div class="responsive-table"><table><thead><tr><th>TEAM MEMBER</th><th>DEPARTMENT</th><th>ROLE</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody>@for (member of workspace.users().filter(matchesUser); track member.id) { <tr><td><span class="user-table-person"><span class="avatar table-avatar">{{ member.initials }}</span><span><strong>{{ member.name }}</strong><small>{{ member.email }}</small></span></span></td><td>{{ member.department }}</td><td><span class="role-badge" [class.admin-role]="member.role === 'ADMIN'">{{ member.role === 'ADMIN' ? 'Administrator' : 'Employee' }}</span></td><td><span class="status-badge status-confirmed"><i></i>Active</span></td><td><button class="action-text" type="button" (click)="toggleUserRole(member)">{{ member.role === 'ADMIN' ? 'Make employee' : 'Make admin' }}</button></td></tr> }</tbody></table></div></section>
+      </section>
+    }
+
+    @case ('admin-reservations') {
+      <section class="reservations-page">
+        <div class="page-heading-row"><div><span class="eyebrow">THE BIG PICTURE</span><h1>All reservations.</h1><p>Everything happening across your workspace, all in one place.</p></div><button class="secondary-button" type="button" (click)="exportReservations()"><ng-icon name="lucideDownload" size="15" /> Export report</button></div>
+        <section class="panel reservations-panel"><div class="table-toolbar"><div class="filter-tabs">@for (filter of ['All', 'Confirmed', 'Pending', 'Cancelled']; track filter) { <button type="button" [class.tab-selected]="statusFilter() === filter" (click)="setReservationFilter($any(filter))">{{ filter }} <span>{{ filter === 'All' ? workspace.reservations().length : workspace.reservations().filter((item) => item.status === filter.toUpperCase()).length }}</span></button> }</div><label class="table-search"><ng-icon name="lucideSearch" size="15" /><input aria-label="Search all reservations" placeholder="Search meetings..." [value]="reservationSearch()" (input)="reservationSearch.set($any($event.target).value)" /></label></div><div class="responsive-table"><table><thead><tr><th>MEETING</th><th>ROOM</th><th>HOST</th><th>DATE & TIME</th><th>ATTENDEES</th><th>STATUS</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody>@for (reservation of allVisibleReservations().slice(0, 12); track reservation.id) { <tr><td><button class="table-meeting" type="button" (click)="selectedReservation.set(reservation)"><span class="table-meeting-icon"><ng-icon name="lucideCalendarCheck" size="15" /></span><span><strong>{{ reservation.title }}</strong><small>#{{ reservation.id }}</small></span></button></td><td>{{ reservation.roomName }}</td><td>{{ reservation.userName }}</td><td><span class="table-date">{{ reservation.startTime | date:'EEE, MMM d' }}</span><small class="table-time">{{ timeLabel(reservation.startTime) }} – {{ timeLabel(reservation.endTime) }}</small></td><td><span class="attendee-count"><ng-icon name="lucideUsers" size="14" />{{ reservation.attendeesCount }}</span></td><td><span class="status-badge" [class.status-confirmed]="reservation.status === 'CONFIRMED'" [class.status-pending]="reservation.status === 'PENDING'" [class.status-cancelled]="reservation.status === 'CANCELLED'"><i></i>{{ reservation.status === 'CONFIRMED' ? 'Confirmed' : reservation.status === 'PENDING' ? 'Pending' : 'Cancelled' }}</span></td><td><button class="row-more" type="button" aria-label="View reservation" (click)="selectedReservation.set(reservation)"><ng-icon name="lucideMoreHorizontal" size="18" /></button></td></tr> }</tbody></table></div>@if (!allVisibleReservations().length) { <div class="empty-state large-empty"><span class="empty-icon"><ng-icon name="lucideSearch" size="21" /></span><strong>No reservations found.</strong><p>Try a different search or status.</p></div> }<div class="table-footer"><span>Showing <strong>{{ allVisibleReservations().length > 12 ? 12 : allVisibleReservations().length }}</strong> of <strong>{{ allVisibleReservations().length }}</strong> reservations</span></div></section>
+      </section>
+    }
+
+    @case ('settings') {
+      <section class="settings-page"><div class="page-heading-row"><div><span class="eyebrow">MAKE ROOMLY YOURS</span><h1>Your workspace, your way.</h1><p>A few little things to make your day flow more smoothly.</p></div></div><div class="settings-layout"><nav class="settings-tabs" aria-label="Preference sections">@for (tab of ['General', 'Notifications', 'Appearance']; track tab) { <button type="button" [class.settings-tab-active]="activeTab() === tab" (click)="activeTab.set(tab)"><ng-icon [name]="tab === 'General' ? 'lucideSettings' : tab === 'Notifications' ? 'lucideBell' : 'lucideSparkles'" size="16" />{{ tab }}</button> }</nav><section class="panel settings-content">@if (activeTab() === 'General') { <div class="settings-section-head"><h3>Your profile</h3><p>Make yourself at home in the workspace.</p></div><div class="settings-profile-row"><span class="avatar settings-avatar">{{ user()?.initials }}</span><span><strong>{{ user()?.name }}</strong><small>{{ user()?.email }}</small></span><span class="role-badge">{{ user()?.role === 'ADMIN' ? 'Administrator' : 'Employee' }}</span></div><div class="settings-divider"></div><div class="settings-section-head"><h3>Try a different view</h3><p>Switch between the employee and administrator experience.</p></div><div class="role-switcher"><button type="button" [class.role-switch-active]="user()?.role === 'EMPLOYEE'" (click)="changeRole('EMPLOYEE')"><ng-icon name="lucideUsers" size="17" /><span><strong>Employee</strong><small>Rooms, calendar and your reservations</small></span>@if (user()?.role === 'EMPLOYEE') { <ng-icon class="role-check" name="lucideCircleCheck" size="17" /> }</button><button type="button" [class.role-switch-active]="user()?.role === 'ADMIN'" (click)="changeRole('ADMIN')"><ng-icon name="lucideShieldCheck" size="17" /><span><strong>Administrator</strong><small>Workspace tools and management</small></span>@if (user()?.role === 'ADMIN') { <ng-icon class="role-check" name="lucideCircleCheck" size="17" /> }</button></div> } @else if (activeTab() === 'Notifications') { <div class="settings-section-head"><h3>Stay in the loop</h3><p>Choose which updates you’d like to hear about.</p></div><div class="preference-row"><span><strong>Reservation updates</strong><small>Confirmations, changes and cancellations.</small></span><input type="checkbox" checked aria-label="Reservation updates enabled" /></div><div class="preference-row"><span><strong>Meeting reminders</strong><small>A helpful nudge before your meetings begin.</small></span><input type="checkbox" checked aria-label="Meeting reminders enabled" /></div><div class="preference-row"><span><strong>Workspace news</strong><small>New spaces, fresh features and team announcements.</small></span><input type="checkbox" aria-label="Workspace news disabled" /></div> } @else { <div class="settings-section-head"><h3>A softer workspace</h3><p>Roomly is designed to feel at home on your screen.</p></div><div class="appearance-card"><span class="appearance-swatch"></span><span><strong>Light & considered</strong><small>Bright, calm and ready for the day.</small></span><span class="appearance-selected"><ng-icon name="lucideCheck" size="14" /></span></div><div class="settings-note"><ng-icon name="lucideSparkles" size="16" /> More appearance options are on the way.</div> }</section></div></section>
+    }
+  }
+
+  @if (toastMessage()) { <div class="toast-message" role="status"><ng-icon name="lucideCircleCheck" size="17" />{{ toastMessage() }}</div> }
+}
+
+@if (selectedReservation(); as reservation) {
+  <div class="modal-scrim" role="presentation" (click)="selectedReservation.set(null)">
+    <section class="reservation-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" (click)="$event.stopPropagation()">
+    <button class="modal-close" type="button" aria-label="Close details" (click)="selectedReservation.set(null)"><ng-icon name="lucideX" size="18" /></button><span class="eyebrow">RESERVATION #{{ reservation.id }}</span><h2 id="modal-title">{{ reservation.title }}</h2><p class="modal-subtitle">A little time well spent, together.</p><div class="modal-details"><div><ng-icon name="lucideCalendarDays" size="16" /><span><strong>{{ reservation.startTime | date:'EEEE, MMMM d, y' }}</strong><small>{{ timeLabel(reservation.startTime) }} – {{ timeLabel(reservation.endTime) }}</small></span></div><div><ng-icon name="lucideDoorOpen" size="16" /><span><strong>{{ reservation.roomName }}</strong><small>{{ roomLocation(reservation.roomId) }}</small></span></div><div><ng-icon name="lucideUsers" size="16" /><span><strong>{{ reservation.attendeesCount }} people</strong><small>Meeting organizer: {{ reservation.userName }}</small></span></div></div><span class="status-badge modal-status" [class.status-confirmed]="reservation.status === 'CONFIRMED'" [class.status-pending]="reservation.status === 'PENDING'" [class.status-cancelled]="reservation.status === 'CANCELLED'"><i></i>{{ reservation.status }}</span><div class="modal-actions"><button class="secondary-button" type="button" (click)="selectedReservation.set(null)">Close</button>@if (reservation.status !== 'CANCELLED') { <button class="danger-button" type="button" (click)="cancelReservation(reservation); selectedReservation.set(null)"><ng-icon name="lucideX" size="14" /> Cancel reservation</button> }</div>
+    </section>
+  </div>
+}

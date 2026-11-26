@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Dashboard - Room Reservation System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-green-600 to-teal-600 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <i class="fas fa-calendar-check text-white text-2xl"></i>
+                        <span class="text-xl font-bold text-white">Client Dashboard</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/bookings" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fas fa-calendar-alt mr-1"></i> My Bookings
+                    </a>
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-user text-green-600 mr-3"></i>
+                Welcome Back
+            </h1>
+            <p class="text-gray-600 text-lg">Manage your room reservations</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">My Bookings</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">
+                            <i class="fas fa-calendar-alt text-green-500 mr-2"></i>
+                            <span th:text="${myBookingsCount} ?: '0'">0</span>
+                        </p>
+                    </div>
+                    <a href="/bookings" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                        View All <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Available Rooms</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">
+                            <i class="fas fa-door-open text-blue-500 mr-2"></i>
+                            <span th:text="${availableRoomsCount} ?: '4'">4</span>
+                        </p>
+                    </div>
+                    <a href="/bookings/new" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                        Book Now <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                Quick Actions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="/bookings/new" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                    <i class="fas fa-calendar-plus text-green-600 text-2xl mr-4"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">New Booking</p>
+                        <p class="text-sm text-gray-600">Reserve a meeting room</p>
+                    </div>
+                </a>
+                <a href="/bookings" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                    <i class="fas fa-list text-blue-600 text-2xl mr-4"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">My Reservations</p>
+                        <p class="text-sm text-gray-600">View all my bookings</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Client Features Info -->
+        <div class="bg-gradient-to-r from-green-500 to-teal-500 rounded-xl shadow-md p-6 text-white">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-user-check mr-2"></i>
+                Client Features
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">Book Meeting Rooms</p>
+                        <p class="text-sm text-green-100">Reserve available meeting spaces</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">View My Bookings</p>
+                        <p class="text-sm text-green-100">Track all your reservations</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">Cancel Reservations</p>
+                        <p class="text-sm text-green-100">Cancel bookings when needed</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle text-green-300 text-xl mr-3 mt-1"></i>
+                    <div>
+                        <p class="font-semibold">Conflict Detection</p>
+                        <p class="text-sm text-green-100">Automatic double-booking prevention</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>&copy; 2024 Room Reservation System. Client Dashboard.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
